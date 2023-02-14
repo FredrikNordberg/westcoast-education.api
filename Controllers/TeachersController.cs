@@ -4,6 +4,7 @@ using wescoast_education.api.ViewModels.Courses;
 using westcoast_education.api.Data;
 using westcoast_education.api.Models;
 using westcoast_education.api.ViewModel;
+using westcoast_education.api.ViewModel.Teacher;
 
 namespace westcoast_education.api.Controllers
 {
@@ -34,21 +35,7 @@ namespace westcoast_education.api.Controllers
             return Ok(result);
         }
 
-        //! Anonym..
-        // [HttpGet("listall")]
-        // public async Task<IActionResult> ListAllTeachers()
-        // {
-        //     var result = await _context.Teachers
-        //         .Select(t => new
-        //         {
-        //             TeacherId = t.Id,
-        //             Name = $"{t.FirstName} {t.LastName}",
-        //             Email = t.Email
-        //         })
-        //         .ToListAsync();
-
-        //     return Ok(result);
-        // }
+        
 
         //* HÄMTAR LÄRARE GENOM ID....
         [HttpGet("getbyid/{id}")]
@@ -88,43 +75,9 @@ namespace westcoast_education.api.Controllers
 
             return Ok(teacherViewModel);
         }
-
-
-
-
-
-        //! Anonym..
-        // [HttpGet("getbyid/{id}")]
-        // public async Task<IActionResult> GetById(Guid id)
-        // {
-        //     var result = await _context.Teachers
-        //         .Select(t => new 
-        //         {
-        //             TeacherId = t.Id,
-        //             Name = $"{t.FirstName} {t.LastName}",
-        //             Email = t.Email,
-        //             Phone = t.Phone,
-        //             Address = t.Address,
-        //             PostalCode = t.PostalCode,
-        //             City = t.City,
-        //             Courses = t.Courses.Select(c => new
-        //             {
-        //                 CourseId = c.CourseId,
-        //                 Title = c.Title
-        //             }).ToList(),
-        //             Skills = t.Skills.Select(s => new
-        //             {
-        //                 SkillId = s.Id,
-        //                 Name = s.SkillName
-        //             }).ToList()
-        //         })
-        //         .SingleOrDefaultAsync(c => c.TeacherId == id);
-
-        //     return Ok(result);
-        // }
-
         
-        //* LÄGG TILL LÄRARE....
+        
+         //* LÄGG TILL LÄRARE....
         [HttpPost()]
         public async Task<IActionResult> AddTeacher(TeacherPostViewModel model)
         {
@@ -184,6 +137,38 @@ namespace westcoast_education.api.Controllers
             course.Teacher = teacher;
 
             _context.Update(course);
+
+            if (await _context.SaveChangesAsync() > 0)
+            {
+                return NoContent();
+            }
+
+            return StatusCode(500, "Internal Server Error");
+        }
+
+
+        //* UPPDATERA LÄRARE....
+        [HttpPut("{id}")]
+        public async Task<ActionResult> UpdateTeacher(Guid id, UpdateTeacherViewModel model)
+        {
+            if (!ModelState.IsValid) return BadRequest("Information saknas för att kunna uppdatera läraren");
+
+
+            //* Vi måste kontrollera så att läraren inte redan är registrerad i systemet...
+            var teacher = await _context.Teachers.FindAsync(id);
+
+            if (teacher is null) return BadRequest($"Vi kan inte hitta en lärare i systemet med {model.Email}");
+
+            teacher.BirthOfDate = model.BirthOfDate;
+            teacher.FirstName = model.FirstName;
+            teacher.LastName = model.LastName;
+            teacher.Email = model.Email;
+            teacher.Phone = model.Phone;
+            teacher.Address = model.Address;
+            teacher.PostalCode = model.PostalCode;
+            teacher.City = model.City;
+           
+            _context.Teachers.Update(teacher);
 
             if (await _context.SaveChangesAsync() > 0)
             {

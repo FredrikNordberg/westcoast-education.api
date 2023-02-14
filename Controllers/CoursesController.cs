@@ -4,10 +4,11 @@ using wescoast_education.api.ViewModels.Courses;
 using westcoast_education.api.Data;
 using westcoast_education.api.Models;
 using westcoast_education.api.ViewModel;
+using westcoast_education.api.ViewModel.Course;
 
 namespace westcoast_education.api.Controllers
 {
-     [ApiController]
+    [ApiController]
     [Route("api/v1/courses")]
     [Produces("application/json")]
     public class CoursesController : ControllerBase
@@ -112,6 +113,33 @@ namespace westcoast_education.api.Controllers
             return StatusCode(500, "Internal Server Error");
         }
 
+        //* UPPDATERA KURS....
+        [HttpPut("{id}")]
+        public async Task<ActionResult> UpdateCourse(Guid id, UpdateCourseViewModel model)
+        {
+            if (!ModelState.IsValid) return BadRequest("Information saknas för att kunna uppdater kursen");
+
+
+            //* Vi måste kontrollera så att kursen inte redan är registrerad i systemet...
+            var course = await _context.Courses.FindAsync(id);
+
+            if (course is null) return BadRequest($"Vi kan inte hitta en kurs i systemet med {model.CourseNumber}");
+
+            course.CourseNumber = model.CourseNumber;
+            course.Title = model.Title;
+            course.Duration = model.Duration;
+            course.StartDate = model.StartDate;
+           
+            _context.Courses.Update(course);
+
+            if (await _context.SaveChangesAsync() > 0)
+            {
+                return NoContent();
+            }
+
+            return StatusCode(500, "Internal Server Error");
+        }
+
         //* TA BORT KURS..
         [HttpDelete("{id}")]
         public async Task<ActionResult> DeleteCourse(Guid id)
@@ -129,8 +157,8 @@ namespace westcoast_education.api.Controllers
             return StatusCode(500, "Internal Server Error");
         }
 
-        
 
-        
+
+
     }
 }

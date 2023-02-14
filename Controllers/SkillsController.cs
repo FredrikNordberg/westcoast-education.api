@@ -3,6 +3,7 @@ using Microsoft.EntityFrameworkCore;
 using westcoast_education.api.Data;
 using westcoast_education.api.Models;
 using westcoast_education.api.ViewModel;
+using westcoast_education.api.ViewModel.Skill;
 
 namespace westcoast_education.api.Controllers
 {
@@ -52,6 +53,29 @@ namespace westcoast_education.api.Controllers
                 };
 
                 return CreatedAtRoute("GetSkill", new { id = skillViewModel.Id }, skillViewModel);
+            }
+
+            return StatusCode(500, "Internal Server Error");
+        }
+
+
+        //* UPPDATERA KOMPETENS....
+        [HttpPut("{id}")]
+        public async Task<ActionResult> UpdateSkill(Guid id, UpdateSkillViewModel model)
+        {
+            if (!ModelState.IsValid) return BadRequest("Information saknas för att kunna uppdatera kompetensen");
+
+            var skill = await _context.Skill.FindAsync(id);
+
+            if (skill is null) return BadRequest($"Vi kan inte hitta en kompetens i systemet med {model.SkillName}");
+
+            skill.SkillName = model.SkillName;
+            
+           _context.Skill.Update(skill);
+
+            if (await _context.SaveChangesAsync() > 0)
+            {
+                return NoContent();
             }
 
             return StatusCode(500, "Internal Server Error");

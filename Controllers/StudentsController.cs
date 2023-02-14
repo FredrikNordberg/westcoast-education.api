@@ -3,6 +3,8 @@ using Microsoft.EntityFrameworkCore;
 using westcoast_education.api.Data;
 using westcoast_education.api.Models;
 using westcoast_education.api.ViewModel;
+using westcoast_education.api.ViewModel.Student;
+using westcoast_education.api.ViewModel.Teacher;
 
 namespace westcoast_education.api.Controllers
 {
@@ -150,6 +152,39 @@ namespace westcoast_education.api.Controllers
             return StatusCode(500, "Internal Server Error");
         }
 
+
+        //* UPPDATERA STUDENT....
+        [HttpPut("{id}")]
+        public async Task<ActionResult> UpdateStudent(Guid id, UpdateStudentViewModel model)
+        {
+            if (!ModelState.IsValid) return BadRequest("Information saknas för att kunna uppdater studenten");
+
+
+            //* Vi måste kontrollera så att studenten inte redan är registrerad i systemet...
+            var student = await _context.Students.FindAsync(id);
+
+            if (student is null) return BadRequest($"Vi kan inte hitta en student i systemet med {model.Email}");
+
+            student.BirthOfDate = model.BirthOfDate;
+            student.FirstName = model.FirstName;
+            student.LastName = model.LastName;
+            student.Email = model.Email;
+            student.Phone = model.Phone;
+            student.Address = model.Address;
+            student.PostalCode = model.PostalCode;
+            student.City = model.City;
+           
+            _context.Students.Update(student);
+
+            if (await _context.SaveChangesAsync() > 0)
+            {
+                return NoContent();
+            }
+
+            return StatusCode(500, "Internal Server Error");
+        }
+
+        //* TA BORT STUDENT....
         [HttpDelete("{id}")]
         public async Task<ActionResult> DeleteStudent(Guid id)
         {
