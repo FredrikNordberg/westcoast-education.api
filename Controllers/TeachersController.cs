@@ -35,6 +35,32 @@ namespace westcoast_education.api.Controllers
             return Ok(result);
         }
 
+        //* HÄMTAR KURS EFTER EMAIL..
+        [HttpGet("email/{email}")]
+        public async Task<ActionResult> GetByEmail(string email)
+        {
+            var result = await _context.Teachers
+            .Select(t => new TeacherDetailViewModel
+            {
+                TeacherId = t.Id,
+                FirstName = t.FirstName,
+                LastName = t.LastName,
+                Email = t.Email,
+                Phone = t.Phone,
+                Address = t.Address,
+                PostalCode = t.PostalCode,
+                City = t.City,
+            })
+            .SingleOrDefaultAsync(v => v.Email == email);
+
+            if (result == null)
+            {
+                return NotFound();
+            }
+
+            return Ok(result);
+        }
+
         
 
         //* HÄMTAR LÄRARE GENOM ID....

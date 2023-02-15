@@ -6,5 +6,6 @@ namespace westcoast_education.api.Models
         Started,
         Completed,
         Full
+        
     }
 }

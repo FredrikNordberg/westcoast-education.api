@@ -8,6 +8,7 @@ namespace westcoast_education.api.Models
         public int Duration { get; set; }
         public DateTime StartDate { get; set; }
         public DateTime EndDate { get; set; }
+        public CourseStatusEnum Status { get; set; }
 
         // Navigering...
         // Aggregation...

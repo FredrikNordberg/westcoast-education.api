@@ -62,6 +62,32 @@ namespace westcoast_education.api.Controllers
             return Ok(result);
         }
 
+        [HttpGet("birthofdate/{birthofdate}")]
+        public async Task<ActionResult> GetByEmail(DateTime birthofdate)
+        {
+            var result = await _context.Students
+            .Select(t => new StudentDetailViewModel
+            {
+                StudentId = t.Id,
+                BirthOfDate = t.BirthOfDate,
+                FirstName = t.FirstName,
+                LastName = t.LastName,
+                Email = t.Email,
+                Phone = t.Phone,
+                Address = t.Address,
+                PostalCode = t.PostalCode,
+                City = t.City,
+            })
+            .SingleOrDefaultAsync(v => v.BirthOfDate == birthofdate);
+
+            if (result == null)
+            {
+                return NotFound();
+            }
+
+            return Ok(result);
+        }
+
         //* LÄGG TILL NY STUDENT...
         [HttpPost()]
         public async Task<IActionResult> AddStudent(StudentPostViewModel model)

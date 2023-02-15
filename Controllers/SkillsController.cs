@@ -22,7 +22,7 @@ namespace westcoast_education.api.Controllers
         public async Task<IActionResult> ListAll()
         {
             var result = await _context.Skill
-            .Select(s => new
+            .Select(s => new SkillListViewModel
             {
                 Id = s.Id,
                 SkillName = s.SkillName
@@ -31,11 +31,18 @@ namespace westcoast_education.api.Controllers
             return Ok(result);
         }
 
-        // ?  FUNKAR MEN ROUTE ERROR...
+        
         //* LÄGG TILL NY KOMPETENS... 
         [HttpPost]
         public async Task<ActionResult> AddSkill(AddSkillViewModel model)
         {
+            // Kontrollera om modellen som skickats in är giltig...
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
+
+            // Skapa en ny instans av Skill med hjälp av data från AddSkillViewModel...
             var skill = new Skill
             {
                 Id = Guid.NewGuid(),
@@ -43,19 +50,15 @@ namespace westcoast_education.api.Controllers
             };
 
             _context.Skill.Add(skill);
+            await _context.SaveChangesAsync();
 
-            if (await _context.SaveChangesAsync() > 0)
+            var skillViewModel = new SkillViewModel
             {
-                var skillViewModel = new SkillViewModel
-                {
-                    Id = skill.Id,
-                    SkillName = skill.SkillName
-                };
+                Id = skill.Id,
+                SkillName = skill.SkillName
+            };
 
-                return CreatedAtRoute("GetSkill", new { id = skillViewModel.Id }, skillViewModel);
-            }
-
-            return StatusCode(500, "Internal Server Error");
+            return CreatedAtAction(nameof(AddSkill), new { id = skill.Id }, skillViewModel);
         }
 
 
@@ -70,8 +73,8 @@ namespace westcoast_education.api.Controllers
             if (skill is null) return BadRequest($"Vi kan inte hitta en kompetens i systemet med {model.SkillName}");
 
             skill.SkillName = model.SkillName;
-            
-           _context.Skill.Update(skill);
+
+            _context.Skill.Update(skill);
 
             if (await _context.SaveChangesAsync() > 0)
             {

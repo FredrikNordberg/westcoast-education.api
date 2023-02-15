@@ -61,7 +61,7 @@ namespace westcoast_education.api.Controllers
         {
             var result = await _context.Courses
             // Begäran för att hämta en kurs och projicera resultatet till en CourseDetailViewModel...
-                .Select(c => new CourseDetailViewModel 
+                .Select(c => new CourseDetailViewModel
                 {
                     CourseId = c.CourseId,
                     CourseNumber = c.CourseNumber,
@@ -70,7 +70,7 @@ namespace westcoast_education.api.Controllers
                     StartDate = c.StartDate,
                     EndDate = c.EndDate,
                     // Om kursen har en lärare, projicera resultatet till en TeacherDetailViewModel..
-                    Teacher = c.Teacher != null ? new TeacherDetailViewModel 
+                    Teacher = c.Teacher != null ? new TeacherDetailViewModel
                     {
                         TeacherId = c.Teacher.Id,
                         FirstName = c.Teacher.FirstName,
@@ -79,7 +79,7 @@ namespace westcoast_education.api.Controllers
                         Phone = c.Teacher.Phone
                     } : null,
                     // Projicera resultatet av kursens StudentCourses till en lista av StudentDetailViewModels..
-                    Students = c.StudentCourses.Select(s => new StudentDetailViewModel 
+                    Students = c.StudentCourses.Select(s => new StudentDetailViewModel
                     {
                         StudentId = s.Student.Id,
                         FirstName = s.Student.FirstName,
@@ -87,11 +87,11 @@ namespace westcoast_education.api.Controllers
                         Email = s.Student.Email,
                         Phone = s.Student.Phone,
                         // Studentens status i kursen, som en enum..
-                        Status = ((CourseStatusEnum)s.Status) 
+                        Status = ((CourseStatusEnum)s.Status)
                     }).ToList()
                 })
                 // Hämta endast en kurs baserat på dess unika id...
-                .SingleOrDefaultAsync(c => c.CourseId == id); 
+                .SingleOrDefaultAsync(c => c.CourseId == id);
 
             return Ok(result);
         }
@@ -122,16 +122,48 @@ namespace westcoast_education.api.Controllers
 
         //* HÄMTAR KURS EFTER TITELN...
         [HttpGet("title/{title}")]
-        public ActionResult GetByTitel(string titel)
+        public async Task<ActionResult> GetByTitle(string title)
         {
-            return Ok(new { message = $"GetBytitel fungerar {titel}" });
+            var result = await _context.Courses
+            .Select(c => new CourseDetailViewModel
+            {
+                CourseId = c.CourseId,
+                CourseNumber = c.CourseNumber,
+                Title = c.Title,
+                Duration = c.Duration,
+                StartDate = c.StartDate
+            })
+            .SingleOrDefaultAsync(v => v.Title == title);
+
+            if (result == null)
+            {
+                return NotFound();
+            }
+
+            return Ok(result);
         }
 
         //* HÄMTAR KURS EFTER STARTDATUM...
         [HttpGet("startdate/{startdate}")]
-        public ActionResult GetByStartDate(string startdate)
+        public async Task<ActionResult> GetByStartDate(DateTime startdate)
         {
-            return Ok(new { message = $"GetBytitel fungerar {startdate}" });
+            var result = await _context.Courses
+            .Select(c => new CourseDetailViewModel
+            {
+                CourseId = c.CourseId,
+                CourseNumber = c.CourseNumber,
+                Title = c.Title,
+                Duration = c.Duration,
+                StartDate = c.StartDate
+            })
+            .SingleOrDefaultAsync(v => v.StartDate == startdate);
+
+            if (result == null)
+            {
+                return NotFound();
+            }
+
+            return Ok(result);
         }
 
         //* LÄGG TILL KURS I SYSTEMET....
@@ -158,12 +190,12 @@ namespace westcoast_education.api.Controllers
 
             if (await _context.SaveChangesAsync() > 0)
             {
-                var result = new
+                var result = new CourseDetailViewModel
                 {
                     CourseId = course.CourseId,
                     Title = course.Title,
-                    StartDate = course.StartDate.ToShortDateString(),
-                    EndDate = course.EndDate.ToShortDateString()
+                    StartDate = course.StartDate,
+                    EndDate = course.EndDate
                 };
                 return CreatedAtAction(nameof(GetById), new { Id = course.CourseId }, result);
 
@@ -177,17 +209,36 @@ namespace westcoast_education.api.Controllers
         public async Task<ActionResult> UpdateCourse(Guid id, UpdateCourseViewModel model)
         {
             if (!ModelState.IsValid) return BadRequest("Information saknas för att kunna uppdater kursen");
-
-
-            //* Vi måste kontrollera så att kursen inte redan är registrerad i systemet...
+            // Hämta kursen från databasen med det angivna id:et...
             var course = await _context.Courses.FindAsync(id);
-
+            // Kontrollera om det finns en kurs i databasen med det angivna id:et..
             if (course is null) return BadRequest($"Vi kan inte hitta en kurs i systemet med {model.CourseNumber}");
-
+            // Uppdatera kursinformationen med den nya informationen som har skickats in från klienten..
             course.CourseNumber = model.CourseNumber;
             course.Title = model.Title;
             course.Duration = model.Duration;
             course.StartDate = model.StartDate;
+
+            // Uppdatera databasen med den uppdaterade kursen ...      
+            _context.Courses.Update(course);
+            // Kontrollera om det gick att spara ändringarna till databasen och skicka sedan en NoContent response...
+            if (await _context.SaveChangesAsync() > 0)
+            {
+                return NoContent();
+            }
+
+            return StatusCode(500, "Internal Server Error");
+        }
+
+        //* MARKERA KURS SOM FULL...
+        [HttpPatch("{id}")]
+        public async Task<IActionResult> MarkAsFull(Guid id)
+        {
+            var course = await _context.Courses.FindAsync(id);
+
+            if (course is null) return BadRequest($"Vi kan inte hitta en kurs i systemet med {id}");
+            // Uppdatera kursens status till Full...
+            course.Status = CourseStatusEnum.Full;
 
             _context.Courses.Update(course);
 
@@ -199,20 +250,25 @@ namespace westcoast_education.api.Controllers
             return StatusCode(500, "Internal Server Error");
         }
 
-        //* MARKERA KURS SOM FULL...
-        [HttpPatch("{id}")]
-        public ActionResult MarkAsFull(Guid id)
-        {
-
-            return NoContent();
-        }
-
         //* MARKERA KURS SOM KLAR...
         [HttpPatch("markasdone/{id}")]
-        public ActionResult MarkAsDone(Guid id)
+        public async Task<ActionResult> MarkAsDone(Guid id)
         {
+            var course = await _context.Courses.FindAsync(id);
 
-            return NoContent();
+            if (course is null) return BadRequest($"Vi kan inte hitta en kurs i systemet med {id}");
+
+            // Uppdatera kursens status till Completed...
+            course.Status = CourseStatusEnum.Completed;
+
+            _context.Courses.Update(course);
+
+            if (await _context.SaveChangesAsync() > 0)
+            {
+                return NoContent();
+            }
+
+            return StatusCode(500, "Internal Server Error");
         }
 
         //* TA BORT KURS..
