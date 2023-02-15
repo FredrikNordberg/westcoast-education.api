@@ -168,7 +168,7 @@ namespace westcoast_education.api.Controllers
 
         //* LÄGG TILL KURS I SYSTEMET....
         [HttpPost()]
-        public async Task<IActionResult> AddCourse(CoursesPostViewModel model)
+        public async Task<IActionResult> AddCourse(AddCourseViewModel model)
         {
             var exists = await _context.Courses.SingleOrDefaultAsync(
                 c => c.CourseNumber == model.CourseNumber &&
