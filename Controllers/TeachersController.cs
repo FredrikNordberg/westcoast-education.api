@@ -24,7 +24,7 @@ namespace westcoast_education.api.Controllers
         public async Task<IActionResult> ListAllTeachers()
         {
             var result = await _context.Teachers
-                .Select(t => new TeacherViewModel //? Göra en TeacherListViewModel
+                .Select(t => new TeacherListViewModel 
                 {
                     TeacherId = t.Id,
                     FirstName = $"{t.FirstName} {t.LastName}",

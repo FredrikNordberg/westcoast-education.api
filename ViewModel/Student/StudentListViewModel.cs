@@ -1,8 +1,6 @@
-using westcoast_education.api.Models;
-
-namespace westcoast_education.api.ViewModel
+namespace westcoast_education.api.ViewModel.Student
 {
-    public class StudentDetailViewModel 
+    public class StudentListViewModel
     {
         public Guid StudentId { get; set; }
         public DateTime BirthOfDate { get; set; }
@@ -13,6 +11,7 @@ namespace westcoast_education.api.ViewModel
         public string Address { get; set; }
         public string PostalCode { get; set; }
         public string City { get; set; }
-        public CourseStatusEnum Status { get; set; }
+        
+        public List<CourseListViewModel> Courses { get; set; }
     }
 }

@@ -4,6 +4,7 @@ namespace westcoast_education.api.Models
     {
         NoStatus,
         Started,
-        Completed
+        Completed,
+        Full
     }
 }

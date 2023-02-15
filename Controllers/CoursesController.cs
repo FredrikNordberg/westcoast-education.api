@@ -10,7 +10,7 @@ namespace westcoast_education.api.Controllers
 {
     [ApiController]
     [Route("api/v1/courses")]
-    [Produces("application/json")]
+    [Produces("application/json")] //  Specificera vilken typ av svar som metoden ska generera. I detta fall anger attributet att metoden ska returnera ett JSON-svar...
     public class CoursesController : ControllerBase
     {
         private readonly WestcoastEducationContext _context;
@@ -24,55 +24,114 @@ namespace westcoast_education.api.Controllers
         public async Task<IActionResult> ListAllCourses()
         {
             var result = await _context.Courses
-            .Select(c => new
-            {
-                CourseId = c.CourseId,
-                Title = c.Title,
-                StartDate = c.StartDate.ToShortDateString(),
-                Teacher = c.Teacher != null ? c.Teacher.FirstName + " " + c.Teacher.LastName : "Saknas",
-                Students = c.StudentCourses.Select(s => new
+                .Select(c => new CourseListViewModel
                 {
-                    StudentId = s.StudentId,
-                    Name = s.Student.FirstName + " " + s.Student.LastName
-                }).ToList()
-            })
-            .ToListAsync();
+                    CourseId = c.CourseId,
+                    Title = c.Title,
+                    StartDate = c.StartDate,
+                    // Kontrollera om kursen har en lärare, om inte , använd tom lista..
+                    Teachers = c.Teacher != null
+                        ? new List<TeacherDetailViewModel>
+                        {
+                    new TeacherDetailViewModel
+                    {
+                        FirstName = c.Teacher.FirstName,
+                        LastName = c.Teacher.LastName
+                    }
+                        }
+                        : new List<TeacherDetailViewModel>(),
+                    // Hämta elev-data från StudentCourse-tabellen och mappa till ViewModel..
+                    Students = c.StudentCourses.Select(s => new StudentDetailViewModel
+                    {
+
+                        FirstName = s.Student.FirstName,
+                        LastName = s.Student.LastName,
+                    }).ToList()
+                })
+                .ToListAsync();
 
             return Ok(result);
         }
 
         //* HÄMTA KURS GENOM ID:t.... 
+
+
         [HttpGet("getbyid/{id}")]
         public async Task<IActionResult> GetById(Guid id)
         {
             var result = await _context.Courses
-                .Select(c => new
+            // Begäran för att hämta en kurs och projicera resultatet till en CourseDetailViewModel...
+                .Select(c => new CourseDetailViewModel 
                 {
                     CourseId = c.CourseId,
+                    CourseNumber = c.CourseNumber,
+                    Duration = c.Duration,
                     Title = c.Title,
-                    StartDate = c.StartDate.ToShortDateString(),
-                    EndDate = c.EndDate.ToShortDateString(),
-                    Teacher = c.Teacher != null ? new
+                    StartDate = c.StartDate,
+                    EndDate = c.EndDate,
+                    // Om kursen har en lärare, projicera resultatet till en TeacherDetailViewModel..
+                    Teacher = c.Teacher != null ? new TeacherDetailViewModel 
                     {
-                        Id = c.Teacher.Id,
+                        TeacherId = c.Teacher.Id,
                         FirstName = c.Teacher.FirstName,
                         LastName = c.Teacher.LastName,
                         Email = c.Teacher.Email,
                         Phone = c.Teacher.Phone
                     } : null,
-                    Students = c.StudentCourses.Select(s => new
+                    // Projicera resultatet av kursens StudentCourses till en lista av StudentDetailViewModels..
+                    Students = c.StudentCourses.Select(s => new StudentDetailViewModel 
                     {
-                        Id = s.Student.Id,
+                        StudentId = s.Student.Id,
                         FirstName = s.Student.FirstName,
                         LastName = s.Student.LastName,
                         Email = s.Student.Email,
                         Phone = s.Student.Phone,
-                        Status = ((CourseStatusEnum)s.Status).ToString()
-                    })
+                        // Studentens status i kursen, som en enum..
+                        Status = ((CourseStatusEnum)s.Status) 
+                    }).ToList()
                 })
-                .SingleOrDefaultAsync(c => c.CourseId == id);
+                // Hämta endast en kurs baserat på dess unika id...
+                .SingleOrDefaultAsync(c => c.CourseId == id); 
 
             return Ok(result);
+        }
+
+
+        //* HÄMTAR KURS EFTER KURSNUMMBER..
+        [HttpGet("coursenumber/{coursenumber}")]
+        public async Task<ActionResult> GetByCourseNumber(int coursenumber)
+        {
+            var result = await _context.Courses
+            .Select(c => new CourseDetailViewModel
+            {
+                CourseId = c.CourseId,
+                CourseNumber = c.CourseNumber,
+                Title = c.Title,
+                Duration = c.Duration,
+                StartDate = c.StartDate
+            })
+            .SingleOrDefaultAsync(v => v.CourseNumber == coursenumber);
+
+            if (result == null)
+            {
+                return NotFound();
+            }
+
+            return Ok(result);
+        }
+
+        //* HÄMTAR KURS EFTER TITELN...
+        [HttpGet("title/{title}")]
+        public ActionResult GetByTitel(string titel)
+        {
+            return Ok(new { message = $"GetBytitel fungerar {titel}" });
+        }
+
+        //* HÄMTAR KURS EFTER STARTDATUM...
+        [HttpGet("startdate/{startdate}")]
+        public ActionResult GetByStartDate(string startdate)
+        {
+            return Ok(new { message = $"GetBytitel fungerar {startdate}" });
         }
 
         //* LÄGG TILL KURS I SYSTEMET....
@@ -129,7 +188,7 @@ namespace westcoast_education.api.Controllers
             course.Title = model.Title;
             course.Duration = model.Duration;
             course.StartDate = model.StartDate;
-           
+
             _context.Courses.Update(course);
 
             if (await _context.SaveChangesAsync() > 0)
@@ -138,6 +197,22 @@ namespace westcoast_education.api.Controllers
             }
 
             return StatusCode(500, "Internal Server Error");
+        }
+
+        //* MARKERA KURS SOM FULL...
+        [HttpPatch("{id}")]
+        public ActionResult MarkAsFull(Guid id)
+        {
+
+            return NoContent();
+        }
+
+        //* MARKERA KURS SOM KLAR...
+        [HttpPatch("markasdone/{id}")]
+        public ActionResult MarkAsDone(Guid id)
+        {
+
+            return NoContent();
         }
 
         //* TA BORT KURS..

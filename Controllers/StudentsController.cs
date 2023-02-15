@@ -23,10 +23,10 @@ namespace westcoast_education.api.Controllers
         public async Task<IActionResult> ListAllStudents()
         {
             var result = await _context.Students
-                .Select(s => new //? Lägga till en StudentListViewModel..
+                .Select(s => new StudentListViewModel
                 {
                     StudentId = s.Id,
-                    Name = $"{s.FirstName} {s.LastName}",
+                    FirstName = $"{s.FirstName} {s.LastName}",
                     Email = s.Email
                 })
                 .ToListAsync();
@@ -40,21 +40,21 @@ namespace westcoast_education.api.Controllers
         public async Task<IActionResult> GetById(Guid id)
         {
             var result = await _context.Students
-                .Select(s => new
+                .Select(s => new StudentListViewModel         
                 {
                     StudentId = s.Id,
-                    BirthOfDate = s.BirthOfDate.ToShortDateString(),
-                    Name = $"{s.FirstName} {s.LastName}",
+                    BirthOfDate = s.BirthOfDate,
+                    FirstName = $"{s.FirstName} {s.LastName}",
                     Email = s.Email,
                     Phone = s.Phone,
                     Address = s.Address,
                     PostalCode = s.PostalCode,
                     City = s.City,
-                    Courses = s.StudentCourses.Select(c => new
+                    Courses = s.StudentCourses.Select(c => new CourseListViewModel
                     {
                         CourseId = c.CourseId,
                         Title = c.Course.Title,
-                        Status = ((CourseStatusEnum)c.Status).ToString()
+                        Status = ((CourseStatusEnum)c.Status)
                     }).ToList(),
                 })
                 .SingleOrDefaultAsync(c => c.StudentId == id);

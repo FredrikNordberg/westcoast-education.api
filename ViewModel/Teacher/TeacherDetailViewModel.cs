@@ -7,6 +7,7 @@ namespace westcoast_education.api.ViewModel
 {
     public class TeacherDetailViewModel 
     {
+        public Guid TeacherId { get; set; }
         public DateTime BirthOfDate { get; set; }
         public string FirstName { get; set; }
         public string LastName { get; set; }
