@@ -1752,11 +1752,11 @@
   "project": {
     "version": "1.0.0",
     "restore": {
-      "projectUniqueName": "C:\\Users\\Fredr\\OneDrive\\Skrivbord\\STARTER\\westcoast-education.api\\westcoast-education.api.csproj",
+      "projectUniqueName": "c:\\Users\\Fredr\\OneDrive\\Skrivbord\\API\\westcoast-education.api\\westcoast-education.api.csproj",
       "projectName": "westcoast-education.api",
-      "projectPath": "C:\\Users\\Fredr\\OneDrive\\Skrivbord\\STARTER\\westcoast-education.api\\westcoast-education.api.csproj",
+      "projectPath": "c:\\Users\\Fredr\\OneDrive\\Skrivbord\\API\\westcoast-education.api\\westcoast-education.api.csproj",
       "packagesPath": "C:\\Users\\Fredr\\.nuget\\packages\\",
-      "outputPath": "C:\\Users\\Fredr\\OneDrive\\Skrivbord\\STARTER\\westcoast-education.api\\obj\\",
+      "outputPath": "c:\\Users\\Fredr\\OneDrive\\Skrivbord\\API\\westcoast-education.api\\obj\\",
       "projectStyle": "PackageReference",
       "configFilePaths": [
         "C:\\Users\\Fredr\\AppData\\Roaming\\NuGet\\NuGet.Config",

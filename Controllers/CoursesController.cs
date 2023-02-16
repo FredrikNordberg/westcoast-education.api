@@ -1,6 +1,5 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using wescoast_education.api.ViewModels.Courses;
 using westcoast_education.api.Data;
 using westcoast_education.api.Models;
 using westcoast_education.api.ViewModel;
@@ -10,18 +9,20 @@ namespace westcoast_education.api.Controllers
 {
     [ApiController]
     [Route("api/v1/courses")]
-    [Produces("application/json")] //  Specificera vilken typ av svar som metoden ska generera. I detta fall anger attributet att metoden ska returnera ett JSON-svar...
+   
     public class CoursesController : ControllerBase
     {
         private readonly WestcoastEducationContext _context;
+        
         public CoursesController(WestcoastEducationContext context)
         {
+            
             _context = context;
         }
 
         //* LISTA ALLA KURSER...        
         [HttpGet("listall")]
-        public async Task<IActionResult> ListAllCourses()
+        public async Task<IActionResult> ListAll()
         {
             var result = await _context.Courses
                 .Select(c => new CourseListViewModel

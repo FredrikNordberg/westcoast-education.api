@@ -1,8 +1,8 @@
 {
   "version": 2,
-  "dgSpecHash": "b9HZidUno5lUzpg25WWVRsru3wL0inJLLHjTv+RXnU2C9pAf0BK5L2YQVykSHddUbDMMTVHZlcvHEavcchGUDQ==",
+  "dgSpecHash": "gXU6evNc7DrNYPT0BeSzUlbgrcu7THeJDy8sjK1NA8VGzDCXcXsDQQGNYyrpnCrOeYryj8pW9kpG4zLamKMtgw==",
   "success": true,
-  "projectFilePath": "C:\\Users\\Fredr\\OneDrive\\Skrivbord\\STARTER\\westcoast-education.api\\westcoast-education.api.csproj",
+  "projectFilePath": "c:\\Users\\Fredr\\OneDrive\\Skrivbord\\API\\westcoast-education.api\\westcoast-education.api.csproj",
   "expectedPackageFiles": [
     "C:\\Users\\Fredr\\.nuget\\packages\\humanizer.core\\2.14.1\\humanizer.core.2.14.1.nupkg.sha512",
     "C:\\Users\\Fredr\\.nuget\\packages\\microsoft.aspnetcore.openapi\\7.0.1\\microsoft.aspnetcore.openapi.7.0.1.nupkg.sha512",
